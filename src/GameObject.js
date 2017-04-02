@@ -13,16 +13,17 @@ const rotation = dir => {
     }
 }
 const GameObject = ({ status }) => {
-    const { position, direction } = status
+    const { position, direction, name } = status
 
     return <div
         style={{
             position: 'absolute',
             width: 50,
             height: 50,
-            left: position.x,
-            top: position.y
+            left: position.x*50,
+            top: position.y*50
         }}>
+        {name}
         <img src='falcon.png'
             style={{
                 width: '100%',

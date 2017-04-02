@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 
-import { Add } from './actions'
+import { Add, runStage } from './actions'
 
 import Board from './Board'
 
-const App = ({ data, Add }) => (
+const App = ({ data, runStage }) => (
     <div>
         <div>{data}</div>
-        <div onClick={Add}> add </div>
+        <div onClick={runStage}> run one stage </div>
         <Board/>
     </div>
 )
@@ -17,6 +17,6 @@ const App = ({ data, Add }) => (
 export default connect(
     state => ({ ...state }),
     dispatch => ({
-        Add: () => dispatch( Add() )
+        runStage: () => dispatch( runStage() )
     })
 )(App)
