@@ -17,6 +17,6 @@ const App = ({ data, runStage }) => (
 export default connect(
     state => ({ ...state }),
     dispatch => ({
-        runStage: () => dispatch( runStage() )
+        runStage: () => dispatch(runStage)
     })
 )(App)

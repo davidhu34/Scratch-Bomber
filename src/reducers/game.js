@@ -55,7 +55,6 @@ const compileNextMove = status => {
     if(moves.length > 0) {
         let first = moves[0]
         while ( first && clause.indexOf(first.type) > -1) {
-            console.log(moves, moves[0], first)
             if (first.type === 'loop') {
                 const {size, times} = first
                 moves = (times > 1)? [
@@ -66,11 +65,9 @@ const compileNextMove = status => {
             } else if (first.type === 'if') {
                 const size = first.size
                 const {watch, expect} = first.condition
-                console.log(first)
                 const elseMove = moves[size+1] && moves[size+1].type === 'else'?
                     moves[size+1]: null
                 const valid = expect.indexOf(status[watch]) > -1
-                console.log(valid, elseMove)
                 moves = valid? (
                     elseMove? [
                         ...moves.slice(1, size+1),
