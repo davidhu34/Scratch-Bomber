@@ -13,6 +13,10 @@ const initGame = {
         position: { x: 5, y: 2 },
         direction: 'left',
         stagedMoves: [{
+            type: 'loop',
+            size: 3,
+            times: 4
+        },{
             type: 'forward'
         },{
             type: 'forward'
@@ -36,39 +40,40 @@ const initGame = {
 }
 const compileNextMove = status => {
     const clause = ['loop', 'if', 'else']
-
     let moves = status.stagedMoves
-    let first = moves[0]
-    while (clause.indexOf(first.type) > -1) {
-        if (first.type === 'loop') {
-            const {size, times} = first
-            moves = (times > 1)? [
-                ...moves.slice(1, size+1),
-                {...first, times: times-1},
-                ...moves.slice(1)
-            ] : moves.slice(1+size)
-        }
-        else if (first.type === 'if') {
-            const {condition, size} = first.size
-            const elseMove = moves[size+1].type === 'else'?
-                moves[size+1]: null
-            moves = status[condition]? (
-                elseMove? [
+    if(moves.length > 0) {
+        let first = moves[0]
+        console.log(moves, moves[0], first)
+        while (clause.indexOf(moves[0].type) > -1) {
+            if (first.type === 'loop') {
+                const {size, times} = first
+                moves = (times > 1)? [
                     ...moves.slice(1, size+1),
-                    ...moves.slice(1+size+1+elseMove.size)
-                ] : moves.slice(1, size+1)
-            ) : (
-                elseMove? moves.slice(1+size+1)
-                    : moves.slice(1+size)
-            )
+                    {...first, times: times-1},
+                    ...moves.slice(1)
+                ] : moves.slice(1)
+            } else if (first.type === 'if') {
+                const {condition, size} = first.size
+                const elseMove = moves[size+1].type === 'else'?
+                    moves[size+1]: null
+                moves = status[condition]? (
+                    elseMove? [
+                        ...moves.slice(1, size+1),
+                        ...moves.slice(1+size+1+elseMove.size)
+                    ] : moves.slice(1, size+1)
+                ) : (
+                    elseMove? moves.slice(1+size+1)
+                        : moves.slice(1+size)
+                )
+            }
+            first = moves[0]
         }
-        first = moves[0]
     }
     return moves
 }
 const nextStatus = status => {
-    if (status.stagedMoves.length > 0) {
-        const moves = compileNextMove(status)
+    const moves = compileNextMove(status)
+    if (moves.length > 0) {
         const m = moves[0]
         switch (m.type) {
             case 'turn':
@@ -87,16 +92,21 @@ const nextStatus = status => {
             case 'forward':
             default:
                 let pos = status.position
+                console.log(status.direction)
                 switch (status.direction) {
                     case 'right':
                         pos.x += 1
+                        break
                     case 'down':
                         pos.y += 1
+                        break
                     case 'left':
                         pos.x -= 1
+                        break
                     case 'up':
                     default:
                         pos.y -= 1
+                        break
                 }
                 return {
                     ...status,
