@@ -5,7 +5,6 @@ const MoveMoniter = ({ players }) => {
     const ps = players.map(p => ({
         ...p,
         moves: p.moves.map( move => {
-            console.log(p, move)
             for (let i = 0; i < p.moniter.length; i++)
                 if (p.moniter[i].idx === move.idx)
                     return {...move, monitering: true}
@@ -29,12 +28,11 @@ const MoveMoniter = ({ players }) => {
         while (ms.length > 0) {
             const move = ms[0]
             if (clause.indexOf(move.type) > -1) {
-                console.log('move', move)
                 const stat = move.type + ((move.times)? " "+String(move.times):'')
-                const el = <li>{stat}
+                const el = <li>{move.monitering? moniterColor(stat): stat}
                     <ul>{list(ms.slice(1, move.size+1))}</ul>
                 </li>
-                elements.push( move.monitering? moniterColor(el): el)
+                elements.push(el)
                 for (let i = 0; i < move.size+1; i ++)
                     ms.shift()
             } else {
@@ -61,7 +59,6 @@ export default connect(
         const gos = state.game.gameObjects
         let moniters = {}
         Object.keys(gos).map( gok => {
-            console.log(gos[gok])
             const go = gos[gok]
             if(go.type === 'player')
                 moniters[go.linkId] = go.moniter
