@@ -4,12 +4,13 @@ import { connect } from 'react-redux'
 import { Add, runStage } from './actions'
 
 import Board from './Board'
-
+import MoveMoniter from './MoveMoniter'
 const App = ({ data, runStage }) => (
     <div>
         <div>{data}</div>
         <div onClick={runStage}> run one stage </div>
-        <Board/>
+        <Board />
+        <MoveMoniter />
     </div>
 )
 

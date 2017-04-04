@@ -4,7 +4,9 @@ const initGame = {
         linkId: '1',
         position: { x: 1, y: 3 },
         direction: 'up',
+        moniter: [],
         stagedMoves: [{
+            idx: 1,
             type: 'forward'
         }]
     }, {
@@ -12,11 +14,14 @@ const initGame = {
         linkId: '2',
         position: { x: 5, y: 2 },
         direction: 'left',
+        moniter: [],
         stagedMoves: [{
+            idx: 1,
             type: 'loop',
             size: 5,
             times: 7
         },{
+            idx: 2,
             type: 'if',
             size: 2,
             condition: {
@@ -24,14 +29,18 @@ const initGame = {
                 expect: ['right','left']
             }
         },{
+            idx: 3,
             type: 'forward'
         },{
+            idx: 4,
             type: 'turn',
             clockwise: false
         },{
+            idx: 5,
             type: 'else',
             size: 1
         },{
+            idx: 6,
             type: 'turn',
             clockwise: false
         }]
@@ -39,11 +48,44 @@ const initGame = {
     players: {
         '1' :{
             id: '1',
-            name: 'P1'
+            name: 'P1',
+            moves: [{
+                idx: 1,
+                type: 'forward'
+            }]
         },
         '2': {
             id: '2',
-            name: 'P2'
+            name: 'P2',
+            moves: [{
+                idx: 1,
+                type: 'loop',
+                size: 5,
+                times: 7
+            },{
+                idx: 2,
+                type: 'if',
+                size: 2,
+                condition: {
+                    watch: 'direction',
+                    expect: ['right','left']
+                }
+            },{
+                idx: 3,
+                type: 'forward'
+            },{
+                idx: 4,
+                type: 'turn',
+                clockwise: false
+            },{
+                idx: 5,
+                type: 'else',
+                size: 1
+            },{
+                idx: 6,
+                type: 'turn',
+                clockwise: false
+            }]
         }
     },
     resources: {
@@ -51,12 +93,14 @@ const initGame = {
 }
 const compileNextMove = status => {
     const clause = ['loop', 'if', 'else']
+    let moniter = []
     let moves = status.stagedMoves
     if(moves.length > 0) {
         let first = moves[0]
         while ( first && clause.indexOf(first.type) > -1) {
             if (first.type === 'loop') {
                 const {size, times} = first
+                moniter.push(first)
                 moves = (times > 1)? [
                     ...moves.slice(1, size+1),
                     {...first, times: times-1},
@@ -68,6 +112,8 @@ const compileNextMove = status => {
                 const elseMove = moves[size+1] && moves[size+1].type === 'else'?
                     moves[size+1]: null
                 const valid = expect.indexOf(status[watch]) > -1
+                if (valid) moniter.push(first)
+                else if (elseMove) moniter.push(elseMove)
                 moves = valid? (
                     elseMove? [
                         ...moves.slice(1, size+1),
@@ -80,11 +126,12 @@ const compileNextMove = status => {
             }
             first = moves[0]
         }
+        moniter.push(first)
     }
-    return moves
+    return { moves, moniter }
 }
 const nextStatus = status => {
-    const moves = compileNextMove(status)
+    const {moves, moniter} = compileNextMove(status)
     console.log('compiled',moves)
     if (moves.length > 0) {
         const m = moves[0]
@@ -100,6 +147,7 @@ const nextStatus = status => {
                 return {
                     ...status,
                     direction: clock[status.direction][strike],
+                    moniter: moniter,
                     stagedMoves: moves.slice(1)
                 }
             case 'forward':
@@ -123,6 +171,7 @@ const nextStatus = status => {
                 return {
                     ...status,
                     position: pos,
+                    moniter: moniter,
                     stagedMoves: moves.slice(1)
                 }
         }
@@ -132,10 +181,11 @@ const nextStatus = status => {
 export const game = ( state = initGame, action ) => {
     switch (action.type) {
         case 'RUN_STAGE':
+            const newGOStatus = state.gameObjects.map( go => nextStatus(go))
+
             return {
                 ...state,
-                gameObjects:
-                    state.gameObjects.map( go => nextStatus(go))
+                gameObjects: newGOStatus
             }
         default:
             return state
